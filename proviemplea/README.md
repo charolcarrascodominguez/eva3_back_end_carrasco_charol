@@ -1,58 +1,145 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ProviEmplea API
+**Autor:** Charol Carrasco  
+**Asignatura:** Desarrollo Backend  
+**Evaluación:** U3 - Desarrollo Backend  
+**Tecnología:** PHP 8.3 - Laravel 13 - MySQL 8.4.3 - Docker  
+**Formato de datos:** JSON  
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+# Descripción del Proyecto
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+ProviEmplea es una plataforma de búsqueda inversa de empleo desarrollada para la Municipalidad de Providencia.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+La plataforma permite:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Registrar talentos (Personas)
+- Registrar empresas
+- Gestionar solicitudes de contacto
+- Administrar procesos de selección
+- Visualizar estadísticas
+- Documentar la API mediante Swagger (OpenAPI)
 
-## Learning Laravel
+El sistema implementa arquitectura RESTful usando Laravel.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Arquitectura del Sistema
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Cliente (Frontend)  
+⬇  
+API REST (Laravel)  
+⬇  
+Base de datos MySQL (Docker)  
 
-## Agentic Development
+Patrón aplicado:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- MVC
+- API REST
+- UUID como clave primaria
+- JSON como formato único
+- Soft delete lógico (activo = false)
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
+# Instalación y Configuración
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Clonar repositorio
 
-## Contributing
+git clone <repositorio>
+cd proviemplea
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+#Levantar contenedores Docker
 
-## Code of Conduct
+docker compose up -d --build
+#Instalar dependencias
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+docker compose exec app composer install
+#Generar clave de aplicación
 
-## Security Vulnerabilities
+docker compose exec app php artisan key:generate
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+#Ejecutar migraciones
 
-## License
+docker compose exec app php artisan migrate
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#Acceder al sistema
+Abrir navegador:
+
+http://localhost:8081
+
+
+# Modelo de Datos
+# Entidades
+#1. Personas
+id (UUID)
+email
+telefono
+codigo_talento
+nivel_educacional
+titulo_carrera
+anios_experiencia
+competencias (JSON)
+tipo_jornada
+modalidad
+validado
+activo
+
+#2. Empresas
+id (UUID)
+nombre_empresa
+rut_empresa
+email
+tipo_empresa
+rubro
+beneficios (JSON)
+validado
+activo
+
+#3. ContactosSolicitados
+id (UUID)
+empresa_id (FK)
+persona_id (FK)
+estado
+notas_admin
+fechas del proceso
+# Operaciones CRUD Implementadas
+# Personas
+Método	Endpoint	Descripción
+GET	/api/personas	Listar personas activas
+POST	/api/personas	Crear persona
+GET	/api/personas/{id}	Obtener persona
+PUT	/api/personas/{id}	Actualizar persona
+DELETE	/api/personas/{id}	Desactivar persona
+PATCH	/api/personas/{id}/validar	Validar perfil
+
+# Empresas
+Método	Endpoint	Descripción
+GET	/api/empresas	Listar empresas
+POST	/api/empresas	Crear empresa
+GET	/api/empresas/{id}	Obtener empresa
+PUT	/api/empresas/{id}	Actualizar empresa
+DELETE	/api/empresas/{id}	Desactivar empresa
+PATCH	/api/empresas/{id}/validar	Validar empresa
+
+# Administración
+Método	Endpoint	Descripción
+GET	/api/admin/contactos	Listar contactos
+POST	/api/admin/contactos	Crear contacto
+PATCH	/api/admin/contactos/{id}/estado	Actualizar estado
+GET	/api/admin/estadisticas	Ver estadísticas
+
+# Documentación Swagger (OpenAPI)
+Instalación
+
+
+docker compose exec app composer require darkaonline/l5-swagger
+docker compose exec app php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
+Generar documentación
+
+
+docker compose exec app php artisan l5-swagger:generate
+
+#Acceder a Swagger UI
+
+http://localhost:8080/api/documentation
