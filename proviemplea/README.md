@@ -144,4 +144,4 @@ docker compose exec app cp storage/api-docs/api-docs.yaml swagger.yaml
 
 #Acceder a Swagger UI
 
-http://localhost:8080/api/documentation
+http://localhost:8081/api/documentation
