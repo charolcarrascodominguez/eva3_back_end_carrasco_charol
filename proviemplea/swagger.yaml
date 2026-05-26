@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: 'API ProviEmplea'
+  description: 'Documentación oficial de la API ProviEmplea'
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost:8081'
+    description: 'Servidor Local Docker'
+paths:
+  /api/contactos:
+    get:
+      tags:
+        - Contactos
+      operationId: f78385f042cdd9221c11a42c20c170b5
+      responses:
+        200:
+          description: Listado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contacto'
+    post:
+      tags:
+        - Contactos
+      operationId: a5f0e367dc7052ea351cc12ed7776b28
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contacto'
+      responses:
+        201:
+          description: 'Contacto creado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contacto'
+  /api/empresas:
+    get:
+      tags:
+        - Empresas
+      operationId: 9239adbd1cfe29bdf0372db2124d0b1f
+      responses:
+        200:
+          description: Listado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Empresa'
+    post:
+      tags:
+        - Empresas
+      operationId: bea7e1cd70745d9a85563a4cdba64902
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empresa'
+      responses:
+        201:
+          description: 'Empresa creada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empresa'
+  /api/personas:
+    get:
+      tags:
+        - Personas
+      summary: 'Listar personas activas'
+      operationId: 19153d93fbbf375afea8d2a21f70831b
+      responses:
+        200:
+          description: 'Listado correcto'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Persona'
+    post:
+      tags:
+        - Personas
+      summary: 'Crear persona'
+      operationId: b76ce2b01c2e821292fac2c4cddb74ee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Persona'
+      responses:
+        201:
+          description: 'Persona creada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        422:
+          description: 'Error de validación'
+  '/api/personas/{id}':
+    get:
+      tags:
+        - Personas
+      summary: 'Obtener persona por ID'
+      operationId: 9ae93a77b50e534e16e3a4aded57564d
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Persona encontrada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        404:
+          description: 'No encontrada'
+components:
+  schemas:
+    Contacto:
+      required:
+        - empresa_id
+        - persona_id
+        - estado
+      properties:
+        id:
+          type: string
+        empresa_id:
+          type: string
+        persona_id:
+          type: string
+        estado:
+          type: string
+          example: pendiente
+        notas_admin:
+          type: string
+      type: object
+    Empresa:
+      required:
+        - nombre_empresa
+        - rut_empresa
+      properties:
+        id:
+          type: string
+        nombre_empresa:
+          type: string
+          example: 'NTT DATA'
+        rut_empresa:
+          type: string
+          example: 76.123.456-7
+        email:
+          type: string
+          example: contacto@empresa.cl
+        tipo_empresa:
+          type: string
+        rubro:
+          type: string
+        beneficios:
+          type: array
+          items:
+            type: string
+        validado:
+          type: boolean
+        activo:
+          type: boolean
+      type: object
+    Persona:
+      required:
+        - email
+        - telefono
+      properties:
+        id:
+          type: string
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          example: juan@email.com
+        telefono:
+          type: string
+          example: '987654321'
+        codigo_talento:
+          type: string
+          example: TAL-001
+        nivel_educacional:
+          type: string
+          example: Universitario
+        titulo_carrera:
+          type: string
+          example: 'Ingeniería Informática'
+        anios_experiencia:
+          type: integer
+          example: 3
+        competencias:
+          type: array
+          items:
+            type: string
+        tipo_jornada:
+          type: string
+          example: Completa
+        modalidad:
+          type: string
+          example: Remoto
+        validado:
+          type: boolean
+          example: false
+        activo:
+          type: boolean
+          example: true
+      type: object
+tags:
+  -
+    name: Contactos
+  -
+    name: Empresas
+  -
+    name: Personas
+    description: 'Gestión de talentos'
