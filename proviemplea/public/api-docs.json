@@ -2,12 +2,12 @@
     "openapi": "3.0.0",
     "info": {
         "title": "API ProviEmplea",
-        "description": "Documentación oficial de la API ProviEmplea.\n\nRate Limiting: Máximo 60 solicitudes por minuto por IP.\nCaché: Los endpoints GET tienen caché de 5 minutos.\nTiempos de respuesta esperados:\nGET ~100ms | POST ~200ms | PUT ~150ms | DELETE ~100ms.",
+        "description": "Documentación oficial de la API ProviEmplea.\n\n**Rate Limiting:** Máximo 60 solicitudes por minuto por IP.\n**Caché:** Los endpoints GET tienen caché de 5 minutos.\n**Tiempos de respuesta esperados:** GET ~100ms | POST ~200ms | PUT ~150ms | DELETE ~100ms.",
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://localhost:8081",
+            "url": "http://localhost:8000",
             "description": "Servidor local de desarrollo"
         }
     ],

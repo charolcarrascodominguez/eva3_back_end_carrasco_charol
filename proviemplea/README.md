@@ -1,5 +1,5 @@
 # ProviEmplea API
-**Autor:** Charol Carrasco  
+**Autor:** Charol Carrasco y Osnalvys Mijares 
 **Asignatura:** Desarrollo Backend  
 **Evaluación:** U3 - Desarrollo Backend  
 **Tecnología:** PHP 8.3 - Laravel 13 - MySQL 8.4.3 - Docker  

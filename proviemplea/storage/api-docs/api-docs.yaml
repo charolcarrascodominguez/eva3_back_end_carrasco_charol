@@ -1,123 +1,494 @@
 openapi: 3.0.0
 info:
   title: 'API ProviEmplea'
-  description: 'Documentación oficial de la API ProviEmplea'
+  description: "Documentación oficial de la API ProviEmplea.\n\nRate Limiting: Máximo 60 solicitudes por minuto por IP.\nCaché: Los endpoints GET tienen caché de 5 minutos.\nTiempos de respuesta esperados:\nGET ~100ms | POST ~200ms | PUT ~150ms | DELETE ~100ms."
   version: 1.0.0
 servers:
   -
     url: 'http://localhost:8081'
-    description: 'Servidor Local Docker'
+    description: 'Servidor local de desarrollo'
 paths:
   /api/contactos:
     get:
       tags:
         - Contactos
+      summary: 'Listar solicitudes de contacto'
+      description: 'Retorna todas las solicitudes de contacto con datos de empresa y persona relacionadas.'
       operationId: f78385f042cdd9221c11a42c20c170b5
+      parameters:
+        -
+          name: estado
+          in: query
+          description: 'Filtrar por estado: pendiente, aceptado, rechazado'
+          required: false
+          schema:
+            type: string
+            example: pendiente
       responses:
         200:
-          description: Listado
+          description: 'Listado obtenido correctamente'
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Contacto'
+              example:
+                -
+                  id: 772a1622-a40d-53e6-c928-668877662222
+                  empresa_id: 661f9511-f39c-42d5-b817-557766551111
+                  persona_id: 550e8400-e29b-41d4-a716-446655440000
+                  estado: pendiente
+                  notas_admin: null
+        500:
+          description: 'Error interno del servidor'
     post:
       tags:
         - Contactos
+      summary: 'Crear solicitud de contacto'
+      description: 'Una empresa solicita contactar a un talento. El estado inicial es pendiente.'
       operationId: a5f0e367dc7052ea351cc12ed7776b28
+      requestBody:
+        description: 'Datos de la solicitud de contacto'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contacto'
+            example:
+              empresa_id: 661f9511-f39c-42d5-b817-557766551111
+              persona_id: 550e8400-e29b-41d4-a716-446655440000
+              estado: pendiente
+              notas_admin: 'Contacto iniciado desde búsqueda por rubro Tecnología'
+      responses:
+        201:
+          description: 'Solicitud creada exitosamente'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contacto'
+        422:
+          description: 'Error de validación — empresa_id o persona_id no existen'
+        500:
+          description: 'Error interno del servidor'
+  '/api/contactos/{id}':
+    get:
+      tags:
+        - Contactos
+      summary: 'Obtener solicitud de contacto por ID'
+      description: 'Retorna los datos de una solicitud junto con la empresa y talento relacionados.'
+      operationId: 79a453f2c4567871d8ae3e94090d169b
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID del contacto'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 772a1622-a40d-53e6-c928-668877662222
+      responses:
+        200:
+          description: 'Contacto encontrado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contacto'
+        404:
+          description: 'Contacto no encontrado'
+        500:
+          description: 'Error interno del servidor'
+    put:
+      tags:
+        - Contactos
+      summary: 'Actualizar solicitud de contacto (PUT)'
+      description: 'Permite actualizar el estado o las notas de una solicitud existente.'
+      operationId: c504bb803bc05172b84d0aa71bfa28fb
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID del contacto'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 772a1622-a40d-53e6-c928-668877662222
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Contacto'
+            example:
+              estado: aceptado
+              notas_admin: 'Empresa verificada y talento notificado'
       responses:
-        201:
-          description: 'Contacto creado'
+        200:
+          description: 'Contacto actualizado correctamente'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Contacto'
+        404:
+          description: 'Contacto no encontrado'
+        422:
+          description: 'Error de validación'
+        500:
+          description: 'Error interno del servidor'
+    delete:
+      tags:
+        - Contactos
+      summary: 'Eliminar solicitud de contacto'
+      description: 'Elimina definitivamente una solicitud de contacto de la base de datos.'
+      operationId: 1b6ab274c05e69bea20c30ac970d5ab3
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID del contacto'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 772a1622-a40d-53e6-c928-668877662222
+      responses:
+        200:
+          description: 'Contacto eliminado correctamente'
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: 'Contacto eliminado'
+                type: object
+        404:
+          description: 'Contacto no encontrado'
+        500:
+          description: 'Error interno del servidor'
   /api/empresas:
     get:
       tags:
         - Empresas
+      summary: 'Listar empresas activas'
+      description: 'Retorna el listado de todas las empresas con estado activo.'
       operationId: 9239adbd1cfe29bdf0372db2124d0b1f
+      parameters:
+        -
+          name: rubro
+          in: query
+          description: 'Filtrar por rubro: Tecnología, Salud, Educación'
+          required: false
+          schema:
+            type: string
+            example: Tecnología
       responses:
         200:
-          description: Listado
+          description: 'Listado obtenido correctamente'
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Empresa'
+              example:
+                -
+                  id: 661f9511-f39c-42d5-b817-557766551111
+                  nombre_empresa: 'NTT DATA Chile'
+                  rut_empresa: 76.123.456-7
+                  email: contacto@nttdata.cl
+                  tipo_empresa: Privada
+                  rubro: Tecnología
+                  beneficios:
+                    - 'Seguro de salud'
+                    - 'Home office'
+                    - Capacitaciones
+                  validado: true
+                  activo: true
+        500:
+          description: 'Error interno del servidor'
     post:
       tags:
         - Empresas
+      summary: 'Crear nueva empresa'
+      description: 'Registra una nueva empresa. El RUT debe ser único.'
       operationId: bea7e1cd70745d9a85563a4cdba64902
+      requestBody:
+        description: 'Datos de la empresa a registrar'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empresa'
+            example:
+              nombre_empresa: 'Startup Verde SpA'
+              rut_empresa: 77.987.654-3
+              email: hola@startupverde.cl
+              tipo_empresa: Startup
+              rubro: Sustentabilidad
+              beneficios:
+                - 'Flexibilidad horaria'
+                - 'Trabajo remoto'
+                - 'Bono anual'
+      responses:
+        201:
+          description: 'Empresa creada exitosamente'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empresa'
+        422:
+          description: 'Error de validación — RUT duplicado'
+        500:
+          description: 'Error interno del servidor'
+  '/api/empresas/{id}':
+    get:
+      tags:
+        - Empresas
+      summary: 'Obtener empresa por ID'
+      description: 'Retorna los datos de una empresa usando su UUID.'
+      operationId: 7e0d938df2a2305cd42451cc84ec72ec
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la empresa'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 661f9511-f39c-42d5-b817-557766551111
+      responses:
+        200:
+          description: 'Empresa encontrada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empresa'
+        404:
+          description: 'Empresa no encontrada'
+        500:
+          description: 'Error interno del servidor'
+    put:
+      tags:
+        - Empresas
+      summary: 'Actualizar empresa completa (PUT)'
+      description: 'Actualiza todos los datos de una empresa registrada.'
+      operationId: 61d6235f805bd62afcf89b24a6bae3aa
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la empresa'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 661f9511-f39c-42d5-b817-557766551111
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Empresa'
+            example:
+              nombre_empresa: 'NTT DATA Chile Actualizado'
+              rut_empresa: 76.123.456-7
+              email: nuevo@nttdata.cl
+              tipo_empresa: Privada
+              rubro: 'Tecnología e Innovación'
+              beneficios:
+                - 'Seguro de salud'
+                - 'Home office'
+                - Capacitaciones
+                - 'Bono anual'
       responses:
-        201:
-          description: 'Empresa creada'
+        200:
+          description: 'Empresa actualizada correctamente'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Empresa'
+        404:
+          description: 'Empresa no encontrada'
+        422:
+          description: 'Error de validación'
+        500:
+          description: 'Error interno del servidor'
+    delete:
+      tags:
+        - Empresas
+      summary: 'Eliminar empresa'
+      description: 'Borrado lógico: pone activo=false. La empresa no aparece en listados pero sus datos se conservan.'
+      operationId: ba97e99dc7744b02f562b861b32e29a6
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la empresa'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 661f9511-f39c-42d5-b817-557766551111
+      responses:
+        200:
+          description: 'Empresa eliminada correctamente'
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: 'Empresa desactivada'
+                type: object
+        404:
+          description: 'Empresa no encontrada'
+        500:
+          description: 'Error interno del servidor'
+  '/api/empresas/{id}/toggle':
+    patch:
+      tags:
+        - Empresas
+      summary: 'Activar o desactivar empresa (PATCH)'
+      description: 'Cambia el estado activo/inactivo de la empresa. Operación de encender o apagar.'
+      operationId: eee8b6b8c1104d36506531c794625f90
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la empresa'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 661f9511-f39c-42d5-b817-557766551111
+      responses:
+        200:
+          description: 'Estado cambiado correctamente'
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: 'Estado de empresa actualizado correctamente'
+                  activo:
+                    type: boolean
+                    example: false
+                type: object
+        404:
+          description: 'Empresa no encontrada'
+        500:
+          description: 'Error interno del servidor'
   /api/personas:
     get:
       tags:
         - Personas
       summary: 'Listar personas activas'
+      description: 'Retorna el listado de personas/talentos con estado activo.'
       operationId: 19153d93fbbf375afea8d2a21f70831b
+      parameters:
+        -
+          name: modalidad
+          in: query
+          description: 'Filtrar por modalidad: Presencial, Remoto, Híbrido'
+          required: false
+          schema:
+            type: string
+            example: Remoto
+        -
+          name: tipo_jornada
+          in: query
+          description: 'Filtrar por jornada: Completa, Part-time, Por proyecto'
+          required: false
+          schema:
+            type: string
+            example: Completa
       responses:
         200:
-          description: 'Listado correcto'
+          description: 'Listado obtenido correctamente'
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Persona'
+              example:
+                -
+                  id: 550e8400-e29b-41d4-a716-446655440000
+                  email: talento01@email.com
+                  telefono: '987654321'
+                  codigo_talento: TAL-001
+                  nivel_educacional: Universitario
+                  titulo_carrera: 'Ingeniería Informática'
+                  anios_experiencia: 3
+                  competencias:
+                    - PHP
+                    - Laravel
+                    - MySQL
+                  tipo_jornada: Completa
+                  modalidad: Remoto
+                  validado: false
+                  activo: true
+        500:
+          description: 'Error interno del servidor'
     post:
       tags:
         - Personas
-      summary: 'Crear persona'
+      summary: 'Crear nueva persona/talento'
+      description: 'Registra un nuevo talento. Solo se requieren email y teléfono.'
       operationId: b76ce2b01c2e821292fac2c4cddb74ee
       requestBody:
+        description: 'Datos del talento a registrar'
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Persona'
+            example:
+              email: talento02@email.com
+              telefono: '912345678'
+              codigo_talento: TAL-002
+              nivel_educacional: Técnico
+              titulo_carrera: 'Técnico en Redes'
+              anios_experiencia: 2
+              competencias:
+                - Redes
+                - Linux
+                - 'Soporte TI'
+              tipo_jornada: Part-time
+              modalidad: Híbrido
       responses:
         201:
-          description: 'Persona creada'
+          description: 'Persona creada exitosamente'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Persona'
         422:
           description: 'Error de validación'
+        500:
+          description: 'Error interno del servidor'
   '/api/personas/{id}':
     get:
       tags:
         - Personas
       summary: 'Obtener persona por ID'
+      description: 'Retorna los datos de una persona usando su UUID.'
       operationId: 9ae93a77b50e534e16e3a4aded57564d
       parameters:
         -
           name: id
           in: path
+          description: 'UUID de la persona'
           required: true
           schema:
             type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
       responses:
         200:
           description: 'Persona encontrada'
@@ -126,7 +497,122 @@ paths:
               schema:
                 $ref: '#/components/schemas/Persona'
         404:
-          description: 'No encontrada'
+          description: 'Persona no encontrada'
+        500:
+          description: 'Error interno del servidor'
+    put:
+      tags:
+        - Personas
+      summary: 'Actualizar persona completa (PUT)'
+      description: 'Actualiza todos los campos de una persona existente.'
+      operationId: a4370a9476fe98f54efa656fbddd395b
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la persona'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Persona'
+            example:
+              email: actualizado@email.com
+              telefono: '911111111'
+              nivel_educacional: Postgrado
+              titulo_carrera: 'Magíster en Ciencias de Datos'
+              anios_experiencia: 6
+              competencias:
+                - Python
+                - 'Machine Learning'
+                - SQL
+              tipo_jornada: Completa
+              modalidad: Remoto
+      responses:
+        200:
+          description: 'Persona actualizada correctamente'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        404:
+          description: 'Persona no encontrada'
+        422:
+          description: 'Error de validación'
+        500:
+          description: 'Error interno del servidor'
+    delete:
+      tags:
+        - Personas
+      summary: 'Eliminar persona'
+      description: 'Borrado lógico: pone activo=false. La persona no aparece en listados pero sus datos se conservan.'
+      operationId: 65acb26d6a487dcc8cb74f199a297fe0
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la persona'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        200:
+          description: 'Persona eliminada correctamente'
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: 'Persona desactivada correctamente'
+                type: object
+        404:
+          description: 'Persona no encontrada'
+        500:
+          description: 'Error interno del servidor'
+  '/api/personas/{id}/toggle':
+    patch:
+      tags:
+        - Personas
+      summary: 'Activar o desactivar perfil (PATCH)'
+      description: 'Cambia el estado activo/inactivo de una persona. Operación de encender o apagar.'
+      operationId: bc0a8dc17199be884e9d0b60e53e3c07
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'UUID de la persona'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        200:
+          description: 'Estado cambiado correctamente'
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: 'Estado actualizado correctamente'
+                  activo:
+                    type: boolean
+                    example: false
+                type: object
+        404:
+          description: 'Persona no encontrada'
+        500:
+          description: 'Error interno del servidor'
 components:
   schemas:
     Contacto:
@@ -137,15 +623,22 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          example: 772a1622-a40d-53e6-c928-668877662222
         empresa_id:
           type: string
+          format: uuid
+          example: 661f9511-f39c-42d5-b817-557766551111
         persona_id:
           type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
         estado:
           type: string
           example: pendiente
         notas_admin:
           type: string
+          example: 'Empresa verificada, contacto válido'
       type: object
     Empresa:
       required:
@@ -154,27 +647,35 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          example: 661f9511-f39c-42d5-b817-557766551111
         nombre_empresa:
           type: string
-          example: 'NTT DATA'
+          example: 'NTT DATA Chile'
         rut_empresa:
           type: string
           example: 76.123.456-7
         email:
           type: string
-          example: contacto@empresa.cl
+          format: email
+          example: contacto@nttdata.cl
         tipo_empresa:
           type: string
+          example: Privada
         rubro:
           type: string
+          example: Tecnología
         beneficios:
           type: array
           items:
             type: string
+            example: 'Seguro de salud'
         validado:
           type: boolean
+          example: false
         activo:
           type: boolean
+          example: true
       type: object
     Persona:
       required:
@@ -183,10 +684,12 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           example: 550e8400-e29b-41d4-a716-446655440000
         email:
           type: string
-          example: juan@email.com
+          format: email
+          example: talento01@email.com
         telefono:
           type: string
           example: '987654321'
@@ -206,6 +709,7 @@ components:
           type: array
           items:
             type: string
+            example: PHP
         tipo_jornada:
           type: string
           example: Completa
@@ -222,8 +726,10 @@ components:
 tags:
   -
     name: Contactos
+    description: 'Gestión de solicitudes de contacto entre empresas y talentos'
   -
     name: Empresas
+    description: 'Gestión de empresas que buscan talentos en ProviEmplea'
   -
     name: Personas
-    description: 'Gestión de talentos'
+    description: 'Gestión de talentos de la plataforma ProviEmplea'

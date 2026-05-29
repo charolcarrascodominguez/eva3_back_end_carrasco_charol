@@ -13,13 +13,10 @@ return new class extends Migration
 
             $table->string('nombre_empresa');
             $table->string('rut_empresa')->unique();
-            $table->string('email');
-
-            $table->string('tipo_empresa');
-            $table->string('rubro');
-
-            $table->json('beneficios');
-
+            $table->string('email')->nullable();
+            $table->string('tipo_empresa')->nullable();
+            $table->string('rubro')->nullable();
+            $table->json('beneficios')->nullable();
             $table->boolean('validado')->default(false);
             $table->boolean('activo')->default(true);
 
